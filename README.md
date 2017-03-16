@@ -1,0 +1,1 @@
+# GlobalAzureDay2017
