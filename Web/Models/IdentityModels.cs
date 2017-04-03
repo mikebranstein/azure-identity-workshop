@@ -1,8 +1,8 @@
-﻿using System.Security.Claims;
+﻿using System.Data.Entity;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
-using ElCamino.AspNet.Identity.AzureTable;
-using ElCamino.AspNet.Identity.AzureTable.Model;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Web.Models
 {
@@ -13,19 +13,17 @@ namespace Web.Models
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
             var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
-
             // Add custom user claims here
             return userIdentity;
         }
-
-        public string Biography { get; set; }
-        public string ProfilePicUrl { get; set; }
-
     }
 
-    public class ApplicationDbContext : IdentityCloudContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext() : base() { }
+        public ApplicationDbContext()
+            : base("DefaultConnection", throwIfV1Schema: false)
+        {
+        }
 
         public static ApplicationDbContext Create()
         {

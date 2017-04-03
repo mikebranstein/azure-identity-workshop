@@ -7,10 +7,6 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Web.Models;
-using Microsoft.WindowsAzure.Storage;
-using System.Configuration;
-using Microsoft.WindowsAzure.Storage.Blob;
-using System.IO;
 
 namespace Web.Controllers
 {
@@ -65,7 +61,6 @@ namespace Web.Controllers
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-                : message == ManageMessageId.UpdateBiographySuccess ? "You biography was updated."
                 : "";
 
             var userId = User.Identity.GetUserId();
@@ -75,9 +70,7 @@ namespace Web.Controllers
                 PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
                 TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await UserManager.GetLoginsAsync(userId),
-                BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId),
-                Biography = await UserManager.GetBiographyAsync(userId),
-                ProfilePicUrl = await UserManager.GetProfilePicUrlAsync(userId)
+                BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
             };
             return View(model);
         }
@@ -112,7 +105,7 @@ namespace Web.Controllers
         {
             return View();
         }
-        
+
         //
         // POST: /Manage/AddPhoneNumber
         [HttpPost]
@@ -329,38 +322,6 @@ namespace Web.Controllers
             return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
 
-        //
-        // Get: /Manage/UpdateBiography
-        public async Task<ActionResult> UpdateBiography()
-        {
-            var userId = User.Identity.GetUserId();
-            var updateBiographyViewModel = new UpdateBiographyViewModel()
-            {
-                Biography = await UserManager.GetBiographyAsync(userId),
-                ProfilePicUrl = await UserManager.GetProfilePicUrlAsync(userId)
-            };
-
-            return View(updateBiographyViewModel);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> UpdateBiography(UpdateBiographyViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-            if (user != null)
-            {
-                user.Biography = model.Biography;
-                user.ProfilePicUrl = await UploadImageAsync(model.ProfilePicUrl, model.ProfilePicture);
-                await UserManager.UpdateAsync(user);
-            }
-            return RedirectToAction("Index", new { Message = ManageMessageId.UpdateBiographySuccess });
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing && _userManager != null)
@@ -372,54 +333,7 @@ namespace Web.Controllers
             base.Dispose(disposing);
         }
 
-
-
-        public async Task<string> UploadImageAsync(string currentBlobUrl, HttpPostedFileBase imageToUpload)
-        {
-            string imageFullPath = null;
-            if (imageToUpload == null || imageToUpload.ContentLength == 0)
-            {
-                return null;
-            }
-            try
-            {
-                var cloudStorageAccount = CloudStorageAccount.Parse($"DefaultEndpointsProtocol=https;AccountName={ConfigurationManager.AppSettings["StorageAccountName"]};AccountKey={ConfigurationManager.AppSettings["StorageAccountKey"]};");
-                var cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
-                var cloudBlobContainer = cloudBlobClient.GetContainerReference(ConfigurationManager.AppSettings["ProfilePicBlobContainer"]);
-
-                if (await cloudBlobContainer.CreateIfNotExistsAsync())
-                {
-                    await cloudBlobContainer.SetPermissionsAsync(
-                        new BlobContainerPermissions
-                        {
-                            PublicAccess = BlobContainerPublicAccessType.Blob
-                        }
-                    );
-                }
-                string imageName;
-                if (currentBlobUrl == string.Empty || currentBlobUrl == null)
-                {
-                    imageName = $"{Guid.NewGuid()}.{Path.GetExtension(imageToUpload.FileName)}";
-                }
-                else
-                {
-                    imageName = Path.GetFileName(currentBlobUrl);
-                }
-
-                var cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(imageName);
-                cloudBlockBlob.Properties.ContentType = imageToUpload.ContentType;
-                await cloudBlockBlob.UploadFromStreamAsync(imageToUpload.InputStream);
-
-                imageFullPath = cloudBlockBlob.Uri.ToString();
-            }
-            catch (Exception ex)
-            {
-
-            }
-            return imageFullPath;
-        }
-
-        #region Helpers
+#region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
@@ -467,8 +381,7 @@ namespace Web.Controllers
             SetPasswordSuccess,
             RemoveLoginSuccess,
             RemovePhoneSuccess,
-            Error,
-            UpdateBiographySuccess
+            Error
         }
 
 #endregion
