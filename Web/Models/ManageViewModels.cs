@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using System.Web;
 
 namespace Web.Models
 {
@@ -13,6 +14,7 @@ namespace Web.Models
         public bool TwoFactor { get; set; }
         public bool BrowserRemembered { get; set; }
         public string Biography { get; set; }
+        public string ProfilePicUrl { get; set; }
     }
 
     public class ManageLoginsViewModel
@@ -89,5 +91,11 @@ namespace Web.Models
     {
         [Display(Name = "Biography")]
         public string Biography { get; set; }
+
+        [Display(Name = "Profile Picture")]
+        [DataType(DataType.Upload)]
+        public HttpPostedFileBase ProfilePicture { get; set; }
+
+        public string ProfilePicUrl { get; set; }
     }
 }

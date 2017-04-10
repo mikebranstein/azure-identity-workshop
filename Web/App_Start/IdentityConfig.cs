@@ -45,6 +45,11 @@ namespace Web
             var user = await this.Store.FindByIdAsync(userId);
             return (user != null) ? user.Biography : string.Empty;
         }
+        public async Task<string> GetProfilePicUrlAsync(string userId)
+        {
+            var user = await this.Store.FindByIdAsync(userId);
+            return (user != null) ? user.ProfilePicUrl : string.Empty;
+        }
 
         /// <summary>
         /// ElCamino - Creates the Azure Table Storage Tables

@@ -7,6 +7,10 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Web.Models;
+using Microsoft.WindowsAzure.Storage;
+using System.Configuration;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System.IO;
 
 namespace Web.Controllers
 {
@@ -73,6 +77,7 @@ namespace Web.Controllers
                 Logins = await UserManager.GetLoginsAsync(userId),
                 BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId),
                 Biography = await UserManager.GetBiographyAsync(userId),
+                ProfilePicUrl = await UserManager.GetProfilePicUrlAsync(userId)
             };
             return View(model);
         }
@@ -342,7 +347,8 @@ namespace Web.Controllers
             var userId = User.Identity.GetUserId();
             var updateBiographyViewModel = new UpdateBiographyViewModel()
             {
-                Biography = await UserManager.GetBiographyAsync(userId)
+                Biography = await UserManager.GetBiographyAsync(userId),
+                ProfilePicUrl = await UserManager.GetProfilePicUrlAsync(userId)
             };
 
             return View(updateBiographyViewModel);
@@ -360,9 +366,47 @@ namespace Web.Controllers
             if (user != null)
             {
                 user.Biography = model.Biography;
+                user.ProfilePicUrl = await UploadImageAsync(model.ProfilePicUrl, model.ProfilePicture) ?? user.ProfilePicUrl;
                 await UserManager.UpdateAsync(user);
             }
             return RedirectToAction("Index", new { Message = ManageMessageId.UpdateBiographySuccess });
+        }
+        
+        public async Task<string> UploadImageAsync(string currentBlobUrl, HttpPostedFileBase imageToUpload)
+        {
+            string imageFullPath = null;
+            if (imageToUpload == null || imageToUpload.ContentLength == 0)
+            {
+                return null;
+            }
+            try
+            {
+                var cloudStorageAccount = CloudStorageAccount.Parse($"DefaultEndpointsProtocol=https;AccountName={ConfigurationManager.AppSettings["StorageAccountName"]};AccountKey={ConfigurationManager.AppSettings["StorageAccountKey"]};");
+                var cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
+                var cloudBlobContainer = cloudBlobClient.GetContainerReference(ConfigurationManager.AppSettings["ProfilePicBlobContainer"]);
+
+                if (await cloudBlobContainer.CreateIfNotExistsAsync())
+                {
+                    await cloudBlobContainer.SetPermissionsAsync(
+                        new BlobContainerPermissions
+                        {
+                            PublicAccess = BlobContainerPublicAccessType.Blob
+                        }
+                    );
+                }
+
+                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(imageToUpload.FileName)}";
+
+                var cloudBlockBlob = cloudBlobContainer.GetBlockBlobReference(imageName);
+                cloudBlockBlob.Properties.ContentType = imageToUpload.ContentType;
+                await cloudBlockBlob.UploadFromStreamAsync(imageToUpload.InputStream);
+
+                imageFullPath = cloudBlockBlob.Uri.ToString();
+            }
+            catch (Exception ex)
+            {
+            }
+            return imageFullPath;
         }
 
 

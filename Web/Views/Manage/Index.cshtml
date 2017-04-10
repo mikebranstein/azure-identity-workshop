@@ -9,6 +9,8 @@
 <div>
     <h4>Change your account settings</h4>
     <hr />
+    <img id="profilePicture" src="@Model.ProfilePicUrl" alt="No profile picture specified." class="has-border" style="width: 100%; max-width:300px;" />
+    @Html.HiddenFor(x => x.ProfilePicUrl, new { id = "profilePictureUrl" })
     <dl class="dl-horizontal">
         <dt>Biography:</dt>
         <dd>

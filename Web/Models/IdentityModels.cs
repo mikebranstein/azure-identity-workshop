@@ -18,6 +18,7 @@ namespace Web.Models
         }
 
         public string Biography { get; set; }
+        public string ProfilePicUrl { get; set; }
     }
 
     public class ApplicationDbContext : IdentityCloudContext
