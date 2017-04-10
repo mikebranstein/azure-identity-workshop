@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Web.Models;
+using ElCamino.AspNet.Identity.AzureTable;
+using ElCamino.AspNet.Identity.AzureTable.Model;
 
 namespace Web
 {
@@ -38,6 +38,15 @@ namespace Web
         public ApplicationUserManager(IUserStore<ApplicationUser> store)
             : base(store)
         {
+        }
+
+        /// <summary>
+        /// ElCamino - Creates the Azure Table Storage Tables
+        /// </summary>
+        public static async void StartupAsync()
+        {
+            var azureStore = new UserStore<ApplicationUser>(new ApplicationDbContext());
+            await azureStore.CreateTablesIfNotExists();
         }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context) 

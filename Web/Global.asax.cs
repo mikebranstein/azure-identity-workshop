@@ -12,6 +12,9 @@ namespace Web
     {
         protected void Application_Start()
         {
+            //ElCamino - Added to create azure tables
+            ApplicationUserManager.StartupAsync();
+
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
