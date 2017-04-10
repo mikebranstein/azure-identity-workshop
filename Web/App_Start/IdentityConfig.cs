@@ -40,6 +40,12 @@ namespace Web
         {
         }
 
+        public async Task<string> GetBiographyAsync(string userId)
+        {
+            var user = await this.Store.FindByIdAsync(userId);
+            return (user != null) ? user.Biography : string.Empty;
+        }
+
         /// <summary>
         /// ElCamino - Creates the Azure Table Storage Tables
         /// </summary>

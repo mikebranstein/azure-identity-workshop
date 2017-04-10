@@ -61,6 +61,7 @@ namespace Web.Controllers
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
+                : message == ManageMessageId.UpdateBiographySuccess ? "You biography was updated."
                 : "";
 
             var userId = User.Identity.GetUserId();
@@ -70,7 +71,8 @@ namespace Web.Controllers
                 PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
                 TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
                 Logins = await UserManager.GetLoginsAsync(userId),
-                BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
+                BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId),
+                Biography = await UserManager.GetBiographyAsync(userId),
             };
             return View(model);
         }
@@ -333,7 +335,38 @@ namespace Web.Controllers
             base.Dispose(disposing);
         }
 
-#region Helpers
+        //
+        // Get: /Manage/UpdateBiography
+        public async Task<ActionResult> UpdateBiography()
+        {
+            var userId = User.Identity.GetUserId();
+            var updateBiographyViewModel = new UpdateBiographyViewModel()
+            {
+                Biography = await UserManager.GetBiographyAsync(userId)
+            };
+
+            return View(updateBiographyViewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> UpdateBiography(UpdateBiographyViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            if (user != null)
+            {
+                user.Biography = model.Biography;
+                await UserManager.UpdateAsync(user);
+            }
+            return RedirectToAction("Index", new { Message = ManageMessageId.UpdateBiographySuccess });
+        }
+
+
+        #region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
@@ -381,7 +414,8 @@ namespace Web.Controllers
             SetPasswordSuccess,
             RemoveLoginSuccess,
             RemovePhoneSuccess,
-            Error
+            Error,
+            UpdateBiographySuccess
         }
 
 #endregion

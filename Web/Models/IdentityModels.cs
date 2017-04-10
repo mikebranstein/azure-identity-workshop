@@ -16,6 +16,8 @@ namespace Web.Models
             // Add custom user claims here
             return userIdentity;
         }
+
+        public string Biography { get; set; }
     }
 
     public class ApplicationDbContext : IdentityCloudContext
