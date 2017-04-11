@@ -383,7 +383,7 @@ namespace Web.Controllers
             {
                 var cloudStorageAccount = CloudStorageAccount.Parse($"DefaultEndpointsProtocol=https;AccountName={ConfigurationManager.AppSettings["StorageAccountName"]};AccountKey={ConfigurationManager.AppSettings["StorageAccountKey"]};");
                 var cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
-                var cloudBlobContainer = cloudBlobClient.GetContainerReference(ConfigurationManager.AppSettings["ProfilePicBlobContainer"]);
+                var cloudBlobContainer = cloudBlobClient.GetContainerReference(ConfigurationManager.AppSettings["ProfilePicUploadBlobContainer"]);
 
                 if (await cloudBlobContainer.CreateIfNotExistsAsync())
                 {
@@ -401,7 +401,7 @@ namespace Web.Controllers
                 cloudBlockBlob.Properties.ContentType = imageToUpload.ContentType;
                 await cloudBlockBlob.UploadFromStreamAsync(imageToUpload.InputStream);
 
-                imageFullPath = cloudBlockBlob.Uri.ToString();
+                imageFullPath = cloudBlockBlob.Uri.ToString().Replace("uploaded", "profile-pics");
             }
             catch (Exception ex)
             {

@@ -20,7 +20,7 @@
     <div class="form-group">
         @Html.LabelFor(m => m.ProfilePicture, new { @class = "col-md-2 control-label" })
         <div class="col-md-10">
-            <img src="@Model.ProfilePicUrl" alt="Profile picture not present." class="has-border" style="width: 100%; max-width: 300px;" />
+            <img src="@Model.ProfilePicUrl" alt="Profile picture not present or not approved." class="has-border" style="width: 100%; max-width: 300px;" />
             @Html.TextBoxFor(m => m.ProfilePicture, new { type = "file" })
             @Html.HiddenFor(m => m.ProfilePicUrl)
         </div>
