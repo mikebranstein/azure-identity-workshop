@@ -65,7 +65,7 @@ namespace Web.Controllers
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-                : message == ManageMessageId.UpdateBiographySuccess ? "You biography was updated."
+                : message == ManageMessageId.UpdateBiographySuccess ? "Your biography was updated."
                 : "";
 
             var userId = User.Identity.GetUserId();
