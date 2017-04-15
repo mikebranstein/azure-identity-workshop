@@ -401,7 +401,7 @@ namespace Web.Controllers
                 cloudBlockBlob.Properties.ContentType = imageToUpload.ContentType;
                 await cloudBlockBlob.UploadFromStreamAsync(imageToUpload.InputStream);
 
-                imageFullPath = cloudBlockBlob.Uri.ToString().Replace("uploaded", "profile-pics");
+                imageFullPath = cloudBlockBlob.Uri.ToString().Replace(ConfigurationManager.AppSettings["ProfilePicUploadBlobContainer"], ConfigurationManager.AppSettings["ProfilePicBlobContainer"]);
             }
             catch (Exception ex)
             {
